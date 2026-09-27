@@ -1,0 +1,1021 @@
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Clasificador de Imágenes con IA</title>
+
+
+    <!-- ==============================
+         ESTILOS CSS
+         ============================== -->
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+
+            margin: 0;
+
+            padding: 0;
+
+            font-family: Arial, Helvetica, sans-serif;
+
+            background: linear-gradient(
+                135deg,
+                #1e3c72,
+                #2a5298
+            );
+
+            min-height: 100vh;
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+        }
+
+
+        .contenedor {
+
+            width: 95%;
+
+            max-width: 850px;
+
+            background: white;
+
+            border-radius: 20px;
+
+            padding: 30px;
+
+            text-align: center;
+
+            box-shadow:
+                0 10px 30px
+                rgba(0, 0, 0, 0.3);
+
+        }
+
+
+        h1 {
+
+            margin-top: 0;
+
+            color: #1e3c72;
+
+            font-size: 32px;
+
+        }
+
+
+        .descripcion {
+
+            color: #555;
+
+            font-size: 17px;
+
+            margin-bottom: 25px;
+
+        }
+
+
+        .botones {
+
+            margin-bottom: 20px;
+
+        }
+
+
+        button {
+
+            border: none;
+
+            border-radius: 10px;
+
+            padding: 14px 25px;
+
+            margin: 5px;
+
+            font-size: 16px;
+
+            cursor: pointer;
+
+            color: white;
+
+            background: #1e3c72;
+
+            transition: 0.3s;
+
+        }
+
+
+        button:hover {
+
+            transform: scale(1.05);
+
+            background: #16305d;
+
+        }
+
+
+        button:disabled {
+
+            background: #999;
+
+            cursor: not-allowed;
+
+            transform: none;
+
+        }
+
+
+        #webcam-container {
+
+            margin: 20px auto;
+
+            display: flex;
+
+            justify-content: center;
+
+        }
+
+
+        #webcam-container canvas {
+
+            border-radius: 15px;
+
+            border: 4px solid #1e3c72;
+
+            max-width: 100%;
+
+            height: auto;
+
+        }
+
+
+        .estado {
+
+            font-size: 18px;
+
+            font-weight: bold;
+
+            margin: 15px;
+
+            color: #333;
+
+        }
+
+
+        #label-container {
+
+            margin-top: 20px;
+
+        }
+
+
+        .resultado {
+
+            margin: 10px 0;
+
+            text-align: left;
+
+        }
+
+
+        .nombre-clase {
+
+            font-weight: bold;
+
+            font-size: 17px;
+
+            margin-bottom: 5px;
+
+        }
+
+
+        .barra-fondo {
+
+            width: 100%;
+
+            height: 25px;
+
+            background: #ddd;
+
+            border-radius: 15px;
+
+            overflow: hidden;
+
+        }
+
+
+        .barra {
+
+            height: 100%;
+
+            width: 0%;
+
+            background: #2a5298;
+
+            transition: width 0.3s;
+
+        }
+
+
+        .porcentaje {
+
+            margin-top: 3px;
+
+            font-size: 14px;
+
+            color: #555;
+
+        }
+
+
+        .resultado-principal {
+
+            margin-top: 25px;
+
+            padding: 20px;
+
+            background: #eef4ff;
+
+            border-radius: 15px;
+
+            border: 2px solid #2a5298;
+
+        }
+
+
+        .resultado-principal h2 {
+
+            margin: 5px;
+
+            color: #1e3c72;
+
+        }
+
+
+        .resultado-principal p {
+
+            font-size: 28px;
+
+            font-weight: bold;
+
+            margin: 10px;
+
+        }
+
+
+        .instrucciones {
+
+            margin-top: 25px;
+
+            background: #f5f5f5;
+
+            padding: 15px;
+
+            border-radius: 10px;
+
+            text-align: left;
+
+        }
+
+
+        .instrucciones h3 {
+
+            margin-top: 0;
+
+            color: #1e3c72;
+
+        }
+
+
+        .instrucciones li {
+
+            margin-bottom: 8px;
+
+        }
+
+
+        footer {
+
+            margin-top: 25px;
+
+            color: #777;
+
+            font-size: 14px;
+
+        }
+
+
+        @media (max-width: 600px) {
+
+            h1 {
+
+                font-size: 25px;
+
+            }
+
+            .contenedor {
+
+                padding: 20px;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- ==============================
+         CONTENEDOR PRINCIPAL
+         ============================== -->
+
+    <div class="contenedor">
+
+
+        <h1>
+
+            🤖 Clasificador de Imágenes con IA
+
+        </h1>
+
+
+        <p class="descripcion">
+
+            Modelo entrenado con Google Teachable Machine
+
+        </p>
+
+
+        <!-- ==============================
+             BOTONES
+             ============================== -->
+
+        <div class="botones">
+
+            <button
+                id="btnIniciar"
+                onclick="iniciar()">
+
+                📷 INICIAR CÁMARA
+
+            </button>
+
+
+            <button
+                id="btnDetener"
+                onclick="detener()"
+                disabled>
+
+                ⛔ DETENER
+
+            </button>
+
+        </div>
+
+
+        <!-- ==============================
+             ESTADO
+             ============================== -->
+
+        <div
+            id="estado"
+            class="estado">
+
+            Presione "INICIAR CÁMARA"
+
+        </div>
+
+
+        <!-- ==============================
+             CÁMARA
+             ============================== -->
+
+        <div id="webcam-container"></div>
+
+
+        <!-- ==============================
+             RESULTADO PRINCIPAL
+             ============================== -->
+
+        <div
+            id="resultado-principal"
+            class="resultado-principal"
+            style="display:none;">
+
+            <h2>Resultado principal</h2>
+
+            <p id="prediccion-principal">
+                ---
+            </p>
+
+        </div>
+
+
+        <!-- ==============================
+             RESULTADOS DE TODAS LAS CLASES
+             ============================== -->
+
+        <div id="label-container"></div>
+
+
+        <!-- ==============================
+             INSTRUCCIONES
+             ============================== -->
+
+        <div class="instrucciones">
+
+            <h3>📌 Instrucciones</h3>
+
+            <ol>
+
+                <li>
+                    Presione el botón
+                    <strong>INICIAR CÁMARA</strong>.
+                </li>
+
+                <li>
+                    Permita el acceso a la cámara.
+                </li>
+
+                <li>
+                    Coloque frente a la cámara
+                    uno de los objetos utilizados
+                    para entrenar el modelo.
+                </li>
+
+                <li>
+                    Espere unos segundos para
+                    observar la predicción.
+                </li>
+
+                <li>
+                    Observe el porcentaje de
+                    confianza de cada clase.
+                </li>
+
+            </ol>
+
+        </div>
+
+
+        <!-- ==============================
+             PIE DE PÁGINA
+             ============================== -->
+
+        <footer>
+
+            Proyecto académico de Inteligencia Artificial
+
+            <br>
+
+            Teachable Machine + TensorFlow.js + GitHub Pages
+
+        </footer>
+
+
+    </div>
+
+
+    <!-- ==================================================
+         TENSORFLOW.JS
+         ================================================== -->
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js">
+    </script>
+
+
+    <!-- ==================================================
+         TEACHABLE MACHINE
+         ================================================== -->
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js">
+    </script>
+
+
+    <!-- ==================================================
+         JAVASCRIPT
+         ================================================== -->
+
+    <script>
+
+
+        // =================================================
+        // CONFIGURACIÓN DEL MODELO
+        // =================================================
+
+
+        /*
+         * IMPORTANTE:
+         *
+         * REEMPLAZAR ESTA URL POR LA URL
+         * DEL MODELO CREADO EN TEACHABLE MACHINE.
+         *
+         * Ejemplo:
+         *
+         * const URL =
+         * "https://teachablemachine.withgoogle.com/models/ABC123/";
+         *
+         */
+
+
+        const URL =
+        "https://teachablemachine.withgoogle.com/models/XXXXXXXX/";
+
+
+        // =================================================
+        // VARIABLES GLOBALES
+        // =================================================
+
+
+        let model;
+
+        let webcam;
+
+        let maxPredictions;
+
+        let ejecutando = false;
+
+
+        // =================================================
+        // INICIAR CÁMARA Y MODELO
+        // =================================================
+
+
+        async function iniciar() {
+
+
+            try {
+
+
+                // Cambiar estado
+
+                document.getElementById("estado")
+                    .innerHTML =
+                    "⏳ Cargando modelo...";
+
+
+                // Crear direcciones del modelo
+
+                const modelURL =
+                    URL + "model.json";
+
+
+                const metadataURL =
+                    URL + "metadata.json";
+
+
+                // Cargar modelo
+
+                model = await tmImage.load(
+                    modelURL,
+                    metadataURL
+                );
+
+
+                // Obtener número de clases
+
+                maxPredictions =
+                    model.getTotalClasses();
+
+
+                // Crear cámara
+
+                const flip = true;
+
+
+                webcam =
+                    new tmImage.Webcam(
+                        400,
+                        400,
+                        flip
+                    );
+
+
+                // Configurar cámara
+
+                await webcam.setup();
+
+
+                // Encender cámara
+
+                await webcam.play();
+
+
+                // Activar ejecución
+
+                ejecutando = true;
+
+
+                // Ocultar resultado anterior
+
+                document.getElementById(
+                    "resultado-principal"
+                ).style.display = "none";
+
+
+                // Limpiar cámara anterior
+
+                document.getElementById(
+                    "webcam-container"
+                ).innerHTML = "";
+
+
+                // Mostrar cámara
+
+                document.getElementById(
+                    "webcam-container"
+                ).appendChild(
+                    webcam.canvas
+                );
+
+
+                // Crear contenedores
+                // para las predicciones
+
+                const labelContainer =
+                    document.getElementById(
+                        "label-container"
+                    );
+
+
+                labelContainer.innerHTML = "";
+
+
+                for (
+                    let i = 0;
+                    i < maxPredictions;
+                    i++
+                ) {
+
+
+                    const resultado =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    resultado.className =
+                        "resultado";
+
+
+                    resultado.innerHTML = `
+
+                        <div class="nombre-clase">
+
+                            Clase ${i + 1}
+
+                        </div>
+
+                        <div class="barra-fondo">
+
+                            <div
+                                id="barra-${i}"
+                                class="barra">
+                            </div>
+
+                        </div>
+
+                        <div
+                            id="porcentaje-${i}"
+                            class="porcentaje">
+
+                            0%
+
+                        </div>
+
+                    `;
+
+
+                    labelContainer.appendChild(
+                        resultado
+                    );
+
+                }
+
+
+                // Cambiar botones
+
+                document.getElementById(
+                    "btnIniciar"
+                ).disabled = true;
+
+
+                document.getElementById(
+                    "btnDetener"
+                ).disabled = false;
+
+
+                // Cambiar estado
+
+                document.getElementById(
+                    "estado"
+                ).innerHTML =
+                    "🟢 Cámara activa - Analizando...";
+
+
+                // Comenzar ciclo
+
+                window.requestAnimationFrame(
+                    loop
+                );
+
+
+            } catch (error) {
+
+
+                console.error(error);
+
+
+                document.getElementById(
+                    "estado"
+                ).innerHTML =
+                    "❌ Error al iniciar la cámara o cargar el modelo.";
+
+
+                alert(
+                    "No se pudo iniciar el modelo o la cámara.\n\n" +
+                    "Verifique la URL del modelo y los permisos de la cámara."
+                );
+
+            }
+
+        }
+
+
+        // =================================================
+        // BUCLE DE PREDICCIÓN
+        // =================================================
+
+
+        async function loop() {
+
+
+            if (!ejecutando) {
+
+                return;
+
+            }
+
+
+            // Actualizar cámara
+
+            webcam.update();
+
+
+            // Realizar predicción
+
+            await predecir();
+
+
+            // Continuar
+
+            window.requestAnimationFrame(
+                loop
+            );
+
+        }
+
+
+        // =================================================
+        // REALIZAR PREDICCIÓN
+        // =================================================
+
+
+        async function predecir() {
+
+
+            if (!model || !webcam) {
+
+                return;
+
+            }
+
+
+            // Obtener predicciones
+
+            const prediction =
+                await model.predict(
+                    webcam.canvas
+                );
+
+
+            // Variables para encontrar
+            // la clase con mayor probabilidad
+
+            let mayorProbabilidad = 0;
+
+            let clasePrincipal = "";
+
+
+            // Recorrer todas las clases
+
+            for (
+                let i = 0;
+                i < maxPredictions;
+                i++
+            ) {
+
+
+                // Nombre de la clase
+
+                const nombre =
+                    prediction[i].className;
+
+
+                // Probabilidad
+
+                const probabilidad =
+                    prediction[i].probability;
+
+
+                // Convertir a porcentaje
+
+                const porcentaje =
+                    (
+                        probabilidad * 100
+                    ).toFixed(1);
+
+
+                // Actualizar nombre
+
+                const nombreElement =
+                    document.querySelector(
+                        `#label-container .resultado:nth-child(${i + 1}) .nombre-clase`
+                    );
+
+
+                if (nombreElement) {
+
+                    nombreElement.innerHTML =
+                        nombre;
+
+                }
+
+
+                // Actualizar barra
+
+                const barra =
+                    document.getElementById(
+                        `barra-${i}`
+                    );
+
+
+                if (barra) {
+
+                    barra.style.width =
+                        porcentaje + "%";
+
+                }
+
+
+                // Actualizar porcentaje
+
+                const porcentajeElement =
+                    document.getElementById(
+                        `porcentaje-${i}`
+                    );
+
+
+                if (porcentajeElement) {
+
+                    porcentajeElement.innerHTML =
+                        porcentaje + "%";
+
+                }
+
+
+                // Buscar mayor probabilidad
+
+                if (
+                    probabilidad >
+                    mayorProbabilidad
+                ) {
+
+                    mayorProbabilidad =
+                        probabilidad;
+
+                    clasePrincipal =
+                        nombre;
+
+                }
+
+            }
+
+
+            // Mostrar resultado principal
+
+            const resultadoPrincipal =
+                document.getElementById(
+                    "resultado-principal"
+                );
+
+
+            resultadoPrincipal.style.display =
+                "block";
+
+
+            document.getElementById(
+                "prediccion-principal"
+            ).innerHTML =
+
+                clasePrincipal +
+                "<br>" +
+                "<small>" +
+                (
+                    mayorProbabilidad * 100
+                ).toFixed(1) +
+                "% de confianza" +
+                "</small>";
+
+        }
+
+
+        // =================================================
+        // DETENER CÁMARA
+        // =================================================
+
+
+        function detener() {
+
+
+            ejecutando = false;
+
+
+            // Detener cámara
+
+            if (webcam) {
+
+                webcam.stop();
+
+            }
+
+
+            // Eliminar imagen de cámara
+
+            document.getElementById(
+                "webcam-container"
+            ).innerHTML = "";
+
+
+            // Limpiar resultados
+
+            document.getElementById(
+                "label-container"
+            ).innerHTML = "";
+
+
+            document.getElementById(
+                "resultado-principal"
+            ).style.display = "none";
+
+
+            // Actualizar estado
+
+            document.getElementById(
+                "estado"
+            ).innerHTML =
+                "🔴 Cámara detenida";
+
+
+            // Activar botón iniciar
+
+            document.getElementById(
+                "btnIniciar"
+            ).disabled = false;
+
+
+            // Desactivar botón detener
+
+            document.getElementById(
+                "btnDetener"
+            ).disabled = true;
+
+        }
+
+
+    </script>
+
+</body>
+
+</html>
